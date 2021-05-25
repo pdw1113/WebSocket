@@ -12,6 +12,10 @@ body {
   min-height: 100vh;
 }
 
+#loginContainer{
+	text-align: center;
+}
+
 ::-webkit-scrollbar {
   width: 5px;
 }

@@ -24,7 +24,7 @@
 		<!-- 제작자 및 디자인 정보 -->
 		
 		<!-- 로그인 -->
-		<div class="container w-25 mb-5">
+		<div class="container w-25 mb-3">
 			<div id="loginContainer" class="input-group">
 				<c:if test="${empty sessionScope.loginUser}">
 					<input type="email" id="name" class="form-control" placeholder="이름" autofocus>
@@ -33,10 +33,11 @@
 					</div>
 				</c:if>
 				<c:if test="${!empty sessionScope.loginUser}">
-					<div>
-						<h3>
-							<span class="badge badge-primary">${sessionScope.loginUser}님 환영합니다.</span>
-						</h3>
+					<div class="alert alert-primary container">
+						${sessionScope.loginUser}님 환영합니다.
+					</div>
+					<div class="container">
+					<button class="btn btn-danger" onclick="logout();">로그아웃</button>
 					</div>
 				</c:if>
 			</div>
@@ -146,28 +147,47 @@
 	</div>
 	
 	<script>
-		<!-- 로그인 (세션 추가) -->
-        function login(){
-        	
-        	let name = document.getElementById("name").value;
-        	
-    		// 게시글 리스트 AJAX 통신
+		function ajaxForHTML(url, data){
+			
+			let htmlData;
+			
+    		// HTML AJAX 통신
     		$.ajax({
-    		    url:"/login?name=" + name,
+    		    url : url,
     		    type:"get",
     		 	// html(jsp)로 받기
     		    dataType: "html", 
-    		    // 로그인 성공 시
+    		    async: false,
+    		    // 성공 시
     		    success:function(data){
-    		    	// 웹소켓 연결
-    		    	connect();
-    		    	// 로그인 확인
-    		    	$("#loginContainer").html(data);
+    		    	htmlData = data;
     		    },
     		    error:function(jqxhr, textStatus, errorThrown){
-    		       console.log("ajax 처리 실패");
+    		       alert("ajax 처리 실패");
     		    }
     		});
+    		
+    		return htmlData;
+		}
+	
+		<!-- 로그인 (세션 추가) -->
+        function login(){
+        	// 이름
+        	let name = document.getElementById("name").value;
+        	// AJAX 통신
+        	let data = ajaxForHTML("/login?name=" + name);
+        	// DOM 변경
+        	$("#loginContainer").html(data);
+        	// WebSocket 연결
+        	connect();
+        }
+        
+        <!-- 로그아웃 (세션 제거) -->
+        function logout(){
+        	// AJAX 통신
+        	let data = ajaxForHTML("/logout");
+        	// DOM 변경
+        	$("#loginContainer").html(data);
         }
         
 		<!-- webSocket 변수 선언 -->

@@ -28,7 +28,6 @@ public class HomeController {
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public ModelAndView login(HttpSession session, String name) {
 		
-		logger.debug("HttpSession 연결");
 		session.setAttribute("loginUser", name);
 		
 		ModelAndView mav = null;
@@ -38,6 +37,18 @@ public class HomeController {
 		return mav;
 	}
 	
-	
-	
+	@RequestMapping(value = "/logout", method = RequestMethod.GET)
+	public ModelAndView logout(HttpSession session) {
+		
+		ModelAndView mav = null;
+		
+		mav = new ModelAndView("sample");
+		
+		// 로그인 세션
+		String user = (String)session.getAttribute("loginUser");
+		
+		session.invalidate();
+		
+		return mav;
+	}	
 }
