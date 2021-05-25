@@ -146,7 +146,6 @@
 	</div>
 	
 	<script>
-		console.log("${sessionScope.loginUser}");
 		<!-- 로그인 (세션 추가) -->
         function login(){
         	
@@ -156,15 +155,14 @@
     		$.ajax({
     		    url:"/login?name=" + name,
     		    type:"get",
-    		    dataType: "html",
+    		 	// html(jsp)로 받기
+    		    dataType: "html", 
+    		    // 로그인 성공 시
     		    success:function(data){
-    		    	alert(data);
-    		    	$("#name").attr("readonly",true);
-    		    	
     		    	// 웹소켓 연결
     		    	connect();
     		    	// 로그인 확인
-    		    	$("#loginContainer").html(name + "님 환영합니다.");
+    		    	$("#loginContainer").html(data);
     		    },
     		    error:function(jqxhr, textStatus, errorThrown){
     		       console.log("ajax 처리 실패");
