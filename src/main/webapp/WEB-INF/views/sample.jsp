@@ -1,12 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <c:if test="${!empty sessionScope.loginUser}">
-<div class="alert alert-primary container">
-	${sessionScope.loginUser}님 환영합니다.
-</div>
-<div class="container">
-	<button class="btn btn-danger" onclick="logout();">로그아웃</button>
-</div>
+	<div class="alert alert-primary container">
+		<span id="loginName">${sessionScope.loginUser}</span>님 환영합니다.
+	</div>
+	<div class="container">
+		<button class="btn btn-danger" onclick="logout();">로그아웃</button>
+	</div>
 </c:if>
 <c:if test="${empty sessionScope.loginUser}">
 	<input type="email" id="name" class="form-control" placeholder="이름" autofocus>

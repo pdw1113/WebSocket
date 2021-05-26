@@ -26,15 +26,17 @@
 		<!-- 로그인 -->
 		<div class="container w-25 mb-3">
 			<div id="loginContainer" class="input-group">
+				<%-- 로그인 X --%>
 				<c:if test="${empty sessionScope.loginUser}">
 					<input type="email" id="name" class="form-control" placeholder="이름" autofocus>
 					<div class="input-group-append">
 						<button class="btn btn-primary" type="button" onclick="login();">로그인</button>
 					</div>
 				</c:if>
-				<c:if test="${!empty sessionScope.loginUser}">
+				<%-- 로그인 O --%>
+				<c:if test="${!empty sessionScope.loginUser}"> 
 					<div class="alert alert-primary container">
-						${sessionScope.loginUser}님 환영합니다.
+						<span id="loginName">${sessionScope.loginUser}</span>님 환영합니다.
 					</div>
 					<div class="container">
 					<button class="btn btn-danger" onclick="logout();">로그아웃</button>
@@ -88,7 +90,7 @@
 			
 			<!-- 채팅창 -->
 			<div class="col-7 px-0">
-				<div class="px-4 py-5 chat-box bg-white">
+				<div class="px-4 py-5 chat-box bg-white" id="message">
 				    <!-- 상대방 메세지 -->
 					<div class="media w-50 mb-3">
 						<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
@@ -100,6 +102,7 @@
 				  		</div>
 					</div>
 				    <!-- 상대방 메세지 -->
+				    
 					<!-- 내가 보낸 메세지 -->
 					<div class="media w-50 ml-auto mb-3">
 						<div class="media-body">
@@ -111,12 +114,15 @@
 					</div>
 					<!-- 내가 보낸 메세지 -->
 				</div>
+				
 				<!-- 메세지 입력 창 -->
 		      	<form action="#" class="bg-light">
 		        	<div class="input-group">
-			          	<input type="text" placeholder="Type a message" aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light">
+			          	<input type="text" id="chat" placeholder="메세지를 입력하세요." aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light">
 			          	<div class="input-group-append">
-			            	<button id="button-addon2" type="submit" class="btn btn-link"> <i class="fa fa-paper-plane"></i></button>
+			            	<button id="button-addon2" type="button" class="btn btn-link" onclick="send('message');">
+			            		<i class="fa fa-paper-plane"></i>
+			            	</button>
 			          	</div>
 		        	</div>
 		      	</form>
@@ -133,30 +139,25 @@
 		<button onclick="send('create');">채팅방만들기</button>
 	</div>
 	<div class="div">
-		<span>내용 : </span>
-		<textarea id="chat"></textarea>
-		<button onclick="send('send');">발송</button>
-	</div>
-	<div class="div">
-		<button onclick="disconnect();">종료</button>
 		<button onclick="chatClear();">CLEAR</button>
 	</div>
 	<div id="roomList" class="div">
 	</div>
-	<div id="message" class="div2">
-	</div>
 	
 	<script>
-		function ajaxForHTML(url, data){
+		// HTML 전송 AJAX
+		function ajaxForHTML(url, data, contentType){
 			
 			let htmlData;
 			
     		// HTML AJAX 통신
     		$.ajax({
     		    url : url,
-    		    type:"get",
+    		    data: data,
+    		    contentType: contentType,
+    		    type:"POST",
     		 	// html(jsp)로 받기
-    		    dataType: "html", 
+    		    dataType: "html",
     		    async: false,
     		    // 성공 시
     		    success:function(data){
@@ -170,16 +171,21 @@
     		return htmlData;
 		}
 	
-		<!-- 로그인 (세션 추가) -->
+		<!-- 로그인 (세션 추가 및 WebSocket 연결) -->
         function login(){
         	// 이름
         	let name = document.getElementById("name").value;
         	// AJAX 통신
-        	let data = ajaxForHTML("/login?name=" + name);
-        	// DOM 변경
-        	$("#loginContainer").html(data);
-        	// WebSocket 연결
-        	connect();
+        	let data = ajaxForHTML("/login", {"name" : name});
+        	// 로그인 성공 시
+        	if(data !== ""){
+            	// DOM 변경
+            	$("#loginContainer").html(data);
+            	// WebSocket 연결
+            	connect();
+            	return;
+        	}
+        	alert("로그인 실패!");
         }
         
         <!-- 로그아웃 (세션 제거) -->
@@ -188,33 +194,7 @@
         	let data = ajaxForHTML("/logout");
         	// DOM 변경
         	$("#loginContainer").html(data);
-        }
-        
-		<!-- webSocket 변수 선언 -->
-		let webSocket;
-
-		<!-- webSocket 연결 -->
-		function connect(){
-			
-			// webSocket 연결되지 않았을 때만 연결
-			if(webSocket === undefined){
-				let wsUri = "ws://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/webSocket/echo";
-				webSocket = new WebSocket(wsUri);
-				webSocket.onopen = onOpen;
-				/* webSocket.onclose = onClose; */
-				webSocket.onmessage = onMessage;
-			}else{
-				document.getElementById("message").innerHTML+="<br/>" + "<b>이미 연결되어 있습니다!!</b>";
-			}
-		}
-
-		<!-- webSocket 연결 성공 시 -->
-		function onOpen(){
-			document.getElementById("message").innerHTML+="<br/>" + "<b>" + $("#name").val() + "님이 웹소켓에 연결되었습니다!!</b>";
-		}
-
-		<!-- webSocket 연결 종료 -->
-		function disconnect(){
+        	// WebSocket 연결 해제
 			if(webSocket !== undefined){
 				// 연결 종료
 				webSocket.close();
@@ -224,19 +204,51 @@
 			}else{
 				document.getElementById("message").innerHTML+="<br/>" + "<b>연결된 웹소켓이 존재하지 않습니다.</b>";
 			}
+        }
+        
+		<!-- webSocket 변수 선언 -->
+		let webSocket;
+		
+		/* 
+			WebSocket Session은 새로고침 시, 연결이 해제 된다.
+			하지만, HttpSession은 해제되지 않는다.
+			그러므로, HttpSession이 연결되어 있을 때(로그인 중)에는 
+			WebSocketSession을 연결시켜 주도록 하자.
+		*/
+		if(webSocket === undefined && "${sessionScope.loginUser}" !== ""){
+			connect();
+		}
+		
+		<!-- webSocket 연결 -->
+		function connect(){
+			
+			// webSocket 연결되지 않았을 때만 연결
+			if(webSocket === undefined){
+				let wsUri = "ws://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/webSocket/echo";
+				webSocket = new WebSocket(wsUri);
+				webSocket.onopen = onOpen;
+				webSocket.onmessage = onMessage;
+				/* webSocket.onclose = onClose; */
+			}else{
+				document.getElementById("message").innerHTML+="<br/>" + "<b>이미 연결되어 있습니다!!</b>";
+			}
 		}
 
-		<!-- webSocket 메세지 발송 시 -->
+		<!-- webSocket 연결 성공 시 -->
+		function onOpen(){
+			// TODO
+		}
+		
+		<!-- webSocket 메세지 발송 -->
 		function send(handle){
 			
 			let data = null;
 			
-			if(handle === "send"){
+			if(handle === "message"){
 				data = {
-					"handle" : "send",
-					"sender" : document.getElementById("name").value,
-					"content" : document.getElementById("chat").value,
-					"c" : "ccc"
+					"handle" : "message",
+					"sender" : "${sessionSocpe.loginUser}" || document.getElementById("loginName").innerHTML,
+					"content" : document.getElementById("chat").value
 				}
 			}else if(handle === "create"){
 				data = {
@@ -254,13 +266,12 @@
 		function onMessage(evt){			
         	let receive = evt.data.split(",");
      		
-        	if(receive[0] === "send"){
+        	if(receive[0] === "message"){
                 let data = {
                    	 "sender" : receive[1],
-                   	 "content" : receive[2],
-                     "c" : receive[3]
+                   	 "content" : receive[2]
                 };
-                writeResponse(data.sender + " : " + data.content);
+                writeResponse(data);
         	}else if(receive[0] === "room"){
         		let data = {
        				"room" : receive[1]
@@ -271,8 +282,14 @@
 		}
 		
 		<!-- webSocket 메세지 화면에 표시해주기 -->
-        function writeResponse(text){
-        	document.getElementById("message").innerHTML+="<br/>"+text;
+        function writeResponse(data){
+        	
+        	// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+        	let messageData = ajaxForHTML("/message", 
+					        			  JSON.stringify(data), 
+					        			  "application/json");
+        	// 화면에 추가
+        	document.getElementById("message").innerHTML += messageData;
         }
         
         function chatClear(){

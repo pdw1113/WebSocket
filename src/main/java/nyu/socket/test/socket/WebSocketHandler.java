@@ -1,6 +1,5 @@
 package nyu.socket.test.socket;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,29 +16,35 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
 	
-	private static Map<String, WebSocketSession> sessionMap = new HashMap<String, WebSocketSession>();
+	// 로그인 유저 목록 : <이름, WebSocketSession>
+	private Map<String, WebSocketSession> sessionMap = new HashMap<String, WebSocketSession>();
+	// 채팅방 목록 : <방이름, WebSocketSession>
 	private Map<String, WebSocketSession> chatMap = new HashMap<String, WebSocketSession>();
 	
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		
-		logger.debug("아이디 : " + session.getAttributes().get("name") + "웹소켓 세션 : " + session.toString() + " 연결 성공");
+		logger.debug("\n아이디 : " + session.getAttributes().get("loginUser") + 
+					 "\n웹소켓 세션 : " + session.getId() + 
+					 "\n연결 성공");
 		
-		sessionMap.put((String)session.getAttributes().get("name"), session);
+		// 로그인 유저 목록에 추가
+		sessionMap.put((String)session.getAttributes().get("loginUser"), session);
+		 
+		logger.debug(sessionMap.toString());
 		
-		String[] strArr = new String[chatMap.size()];
-		
-		int i = 0;
-		
-		for(String chatRoom : chatMap.keySet()) {
-			strArr[i++] = chatRoom;
-		}
-
-		WebSocketMessage<?> message = new TextMessage(Arrays.toString(strArr));
-		
-		for ( String key : sessionMap.keySet()) {
-			sessionMap.get(key).sendMessage(message);
-		}
+		/*
+		 * String[] strArr = new String[chatMap.size()];
+		 * 
+		 * int i = 0;
+		 * 
+		 * for(String chatRoom : chatMap.keySet()) { strArr[i++] = chatRoom; }
+		 * 
+		 * WebSocketMessage<?> message = new TextMessage(Arrays.toString(strArr));
+		 * 
+		 * for ( String key : sessionMap.keySet()) {
+		 * sessionMap.get(key).sendMessage(message); }
+		 */
 	}
 
 	@Override
@@ -48,21 +53,14 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		JSONParser jParser = new JSONParser();
 		JSONObject jObject = (JSONObject) jParser.parse((String)message.getPayload());
 				
-		if(jObject.get("handle").toString().equals("send")) {
+		if(jObject.get("handle").toString().equals("message")) {
 			
-			logger.debug(jObject.get("sender").toString());
-			logger.debug(jObject.get("content").toString()); 
-			logger.debug(jObject.get("c").toString());
-			
-			sessionMap.put(jObject.get("sender").toString(), session);
-			
-			message = new TextMessage("send," + jObject.get("sender").toString() + "," + jObject.get("content").toString() + "," + jObject.get("c").toString());
+			message = new TextMessage("message," + jObject.get("sender").toString() + "," + jObject.get("content").toString());
 			
 			logger.debug("세션 :  "	+ session.toString());
-			logger.debug("메세지 : "	+ message.getPayload());
 			logger.debug("메세지 : "	+ message.toString());
 			
-			logger.debug(sessionMap.toString());
+			logger.debug("메세지 받을 세션들 : " + sessionMap.toString());
 			
 			for ( String key : sessionMap.keySet()) {
 				sessionMap.get(key).sendMessage(message);
@@ -91,8 +89,8 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
 		
-		sessionMap.remove(session.getAttributes().get("name"));
-		logger.debug(session.getAttributes().get("name") + "님의 웹소켓 연결 해제");
+		sessionMap.remove(session.getAttributes().get("loginUser"));
+		logger.debug(session.getAttributes().get("loginUser") + "님의 웹소켓 연결 해제");
 	}
 
 	@Override
