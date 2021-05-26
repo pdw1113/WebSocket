@@ -90,7 +90,7 @@
 			
 			<!-- 채팅창 -->
 			<div class="col-7 px-0">
-				<div class="px-4 py-5 chat-box bg-white" id="message">
+				<div class="px-4 pt-5 chat-box bg-white" id="message">
 				    <!-- 상대방 메세지 -->
 					<div class="media w-50 mb-3">
 						<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
@@ -290,6 +290,8 @@
 					        			  "application/json");
         	// 화면에 추가
         	document.getElementById("message").innerHTML += messageData;
+        	
+        	console.log($('#message').scrollTop($('#message').prop('scrollHeight')));
         }
         
         function chatClear(){

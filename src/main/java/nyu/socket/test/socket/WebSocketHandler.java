@@ -71,7 +71,7 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			logger.debug(jObject.get("room").toString() + "채팅방 생성!");
 			
 			message = new TextMessage("room," + jObject.get("room").toString());
-			
+			 
 			logger.debug(sessionMap.toString());
 			
 			for ( String key : sessionMap.keySet()) {
