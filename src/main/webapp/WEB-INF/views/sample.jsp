@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <c:if test="${!empty sessionScope.loginUser}">
 	<div class="alert alert-primary container">
-		<span id="loginName">${sessionScope.loginUser}</span>님 환영합니다.
+		<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
 	</div>
 	<div class="container">
 		<button class="btn btn-danger" onclick="logout();">로그아웃</button>

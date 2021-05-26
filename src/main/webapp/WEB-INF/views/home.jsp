@@ -36,7 +36,7 @@
 				<%-- 로그인 O --%>
 				<c:if test="${!empty sessionScope.loginUser}"> 
 					<div class="alert alert-primary container">
-						<span id="loginName">${sessionScope.loginUser}</span>님 환영합니다.
+						<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
 					</div>
 					<div class="container">
 					<button class="btn btn-danger" onclick="logout();">로그아웃</button>
@@ -57,7 +57,7 @@
 				    </div>
 
 					<div class="messages-box">
-			      		<div class="list-group rounded-0">
+			      		<div class="list-group rounded-0" id="roomList">
 			        		<a class="list-group-item list-group-item-action active text-white rounded-0">
 					          	<div class="media">
 					          		<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
@@ -70,18 +70,6 @@
 					            	</div>
 				        		</div>
 			        		</a>
-			        		<a class="list-group-item list-group-item-action list-group-item-light rounded-0">
-					          	<div class="media">
-					          		<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
-					            	<div class="media-body ml-4">
-					              		<div class="d-flex align-items-center justify-content-between mb-1">
-						                	<h6 class="mb-0">팀 버너스리</h6>
-						                	<small class="small font-weight-bold">25 Dec</small>
-					              		</div>
-					            	 	<p class="font-italic mb-0 text-small">Hey, How are you?</p>
-					            	</div>
-				        		</div>
-			        		</a>
 		      			</div>
 			    	</div>
 		  		</div>
@@ -90,42 +78,20 @@
 			
 			<!-- 채팅창 -->
 			<div class="col-7 px-0">
+			
 				<div class="px-4 pt-5 chat-box bg-white" id="message">
-				    <!-- 상대방 메세지 -->
-					<div class="media w-50 mb-3">
-						<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
-				  		<div class="media-body ml-3">
-						    <div class="bg-light rounded py-2 px-3 mb-2">
-						    	<p class="text-small mb-0 text-muted">Test which is a new approach all solutions</p>
-						    </div>
-				    		<p class="small text-muted">12:00 PM | Aug 13</p>
-				  		</div>
-					</div>
-				    <!-- 상대방 메세지 -->
-				    
-					<!-- 내가 보낸 메세지 -->
-					<div class="media w-50 ml-auto mb-3">
-						<div class="media-body">
-						    <div class="bg-primary rounded py-2 px-3 mb-2">
-						    	<p class="text-small mb-0 text-white">Test which is a new approach to have all solutions</p>
-						    </div>
-					    	<p class="small text-muted">12:00 PM | Aug 13</p>
-					  	</div>
-					</div>
-					<!-- 내가 보낸 메세지 -->
+				<%-- 메세지 동적 생성 --%>
 				</div>
 				
 				<!-- 메세지 입력 창 -->
-		      	<form action="#" class="bg-light">
-		        	<div class="input-group">
-			          	<input type="text" id="chat" placeholder="메세지를 입력하세요." aria-describedby="button-addon2" class="form-control rounded-0 border-0 py-4 bg-light">
-			          	<div class="input-group-append">
-			            	<button id="button-addon2" type="button" class="btn btn-link" onclick="send('message');">
-			            		<i class="fa fa-paper-plane"></i>
-			            	</button>
-			          	</div>
-		        	</div>
-		      	</form>
+	        	<div class="input-group">
+		          	<input type="text" id="chat" placeholder="메세지를 입력하세요." class="form-control rounded-0 border-0 py-4 bg-light">
+		          	<div class="input-group-append">
+		            	<button type="button" class="btn btn-link bg-white" onclick="send('message');">
+		            		<i class="fa fa-paper-plane"></i>
+		            	</button>
+		          	</div>
+	        	</div>
 				<!-- 메세지 입력 창 -->
 	    	</div>
 		</div>
@@ -133,19 +99,8 @@
 	</div>
 	<!-- 채팅 컨테이너 -->
 	
-	<div class="div">
-		<span>방이름 : </span>
-		<input type="text" id="roomName">
-		<button onclick="send('create');">채팅방만들기</button>
-	</div>
-	<div class="div">
-		<button onclick="chatClear();">CLEAR</button>
-	</div>
-	<div id="roomList" class="div">
-	</div>
-	
 	<script>
-		// HTML 전송 AJAX
+		// HTML 전송 공통 AJAX
 		function ajaxForHTML(url, data, contentType){
 			
 			let htmlData;
@@ -243,55 +198,74 @@
 		function send(handle){
 			
 			let data = null;
+			let chatMessage = document.getElementById("chat");
 			
-			if(handle === "message"){
-				data = {
-					"handle" : "message",
-					"sender" : "${sessionSocpe.loginUser}" || document.getElementById("loginName").innerHTML,
-					"content" : document.getElementById("chat").value
+			if(chatMessage.value){
+				if(handle === "message"){
+					data = {
+						"handle" : "message",
+						"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML,
+						"content" : chatMessage.value
+					}
 				}
-			}else if(handle === "create"){
-				data = {
-					"handle" : "create",
-					"room" : document.getElementById("roomName").value
-				}
+				let jsonData = JSON.stringify(data);
+				
+				webSocket.send(jsonData);
+				
+				chatMessage.value = "";
 			}
-
-			let jsonData = JSON.stringify(data);
-			
-			webSocket.send(jsonData);
 		}
+		
+		// 엔터로 채팅 전송
+		$(document).on('keydown', '#chat', function(e){
+            if(e.keyCode == 13 && !e.shiftKey) {
+            	send('message');
+            }
+       	});
 		
 		<!-- webSocket 메세지 수신 시 -->
 		function onMessage(evt){			
+			
         	let receive = evt.data.split(",");
+        	let data;
      		
         	if(receive[0] === "message"){
-                let data = {
+                data = {
+                	 "handle" : receive[0],
                    	 "sender" : receive[1],
                    	 "content" : receive[2]
                 };
-                writeResponse(data);
-        	}else if(receive[0] === "room"){
-        		let data = {
-       				"room" : receive[1]
-        		}
-        		document.getElementById("roomList").innerHTML += "<br/><button onclick='enterRoom();'>" + data.room + "</button>";
-        	}else{
+        	}else if(receive[0] === "login"){
+                data = {
+                   	 "handle" : receive[0],
+                     "sender" : receive[1]
+                };
         	}
+        	
+            writeResponse(data);
 		}
 		
 		<!-- webSocket 메세지 화면에 표시해주기 -->
         function writeResponse(data){
         	
-        	// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
-        	let messageData = ajaxForHTML("/message", 
-					        			  JSON.stringify(data), 
-					        			  "application/json");
-        	// 화면에 추가
-        	document.getElementById("message").innerHTML += messageData;
-        	
-        	console.log($('#message').scrollTop($('#message').prop('scrollHeight')));
+        	if(data.handle === "message"){
+            	// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+            	let messageData = ajaxForHTML("/message", 
+    					        			  JSON.stringify(data), 
+    					        			  "application/json");
+            	// 화면에 추가
+            	document.getElementById("message").innerHTML += messageData;
+            	
+            	console.log($('#message').scrollTop($('#message').prop('scrollHeight')));
+        	}else if(data.handle === "login"){            	
+        		// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+            	let messageData = ajaxForHTML("/room", 
+						        			  JSON.stringify(data), 
+						        			  "application/json");
+            	// 화면에 추가
+            	document.getElementById("roomList").innerHTML += messageData;
+        		
+        	}
         }
         
         function chatClear(){
