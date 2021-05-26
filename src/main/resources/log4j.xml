@@ -14,7 +14,7 @@
 	<logger name="nyu.socket.test">
 		<level value="debug" />
 	</logger>
-	
+	 
 	<!-- 3rdparty Loggers -->
 	<logger name="org.springframework.core">
 		<level value="info" />

@@ -1,10 +1,8 @@
 package nyu.socket.test.socket;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -40,13 +38,6 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		sessionMap.put(user, session);
 		 
 		logger.debug("로그인 유저 목록 : " + sessionMap.toString());
-		 
-		WebSocketMessage<?> message = new TextMessage("login," + user.getName());
-		
-		// 채팅방 화면에 전송
-		for (User users : sessionMap.keySet()) {
-			sessionMap.get(users).sendMessage(message); 
-		}
 	}
 
 	@Override
@@ -67,7 +58,19 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			for (User user : sessionMap.keySet()) {
 				sessionMap.get(user).sendMessage(message);
 			}
-		}
+		}else if(jObject.get("handle").toString().equals("room")) {
+			User user = (User)session.getAttributes().get("loginUser");
+			message = new TextMessage("login," + user.getName());
+			
+			// 채팅방 화면에 전송
+			for (User users : sessionMap.keySet()) {
+				sessionMap.get(users).sendMessage(message); 
+			}
+		} 
+	}
+	
+	public void createRoom(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
+		System.out.println("AOP테스트");
 	}
 	
 	@Override

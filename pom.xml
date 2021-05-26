@@ -127,6 +127,21 @@
 	        <version>2.9.6</version>
         </dependency>
 		<!-- Web Socket -->
+		
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-aop -->
+<!-- 		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-aop</artifactId>
+		    <version>5.2.10.RELEASE</version>
+		</dependency> -->
+		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+<!-- 		<dependency>
+		    <groupId>org.aspectj</groupId>
+		    <artifactId>aspectjweaver</artifactId>
+		    <version>1.9.6</version>
+		</dependency> -->
+		
+		
 	
 		<!-- Test -->
 		<dependency>

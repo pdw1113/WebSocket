@@ -18,9 +18,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import nyu.socket.test.user.User;
 
-/**
- * Handles requests for the application home page.
- */
 @Controller
 public class HomeController { 
 	
