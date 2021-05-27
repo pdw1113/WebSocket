@@ -3,6 +3,7 @@
 <c:if test="${!empty sessionScope.loginUser}">
 	<div class="alert alert-primary container">
 		<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
+		<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.uuid}"/>
 	</div>
 	<div class="container">
 		<button class="btn btn-danger" onclick="logout();">로그아웃</button>

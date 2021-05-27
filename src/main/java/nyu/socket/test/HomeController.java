@@ -104,6 +104,10 @@ public class HomeController {
 			mav.addObject("map", map);
 			return mav;
 		}
+
+		// uuid 추가
+		mav.addObject("uuid", map.get("uuid"));
+		
 		String sender = map.get("sender");
 		
 		mav.addObject("sender", sender);

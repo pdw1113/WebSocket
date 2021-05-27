@@ -36,6 +36,7 @@
 				<%-- 로그인 O --%>
 				<c:if test="${!empty sessionScope.loginUser}"> 
 					<div class="alert alert-primary container">
+						<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.uuid}"/>
 						<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
 					</div>
 					<div class="container">
@@ -137,20 +138,18 @@
         
         <!-- 로그아웃 (세션 제거) -->
         function logout(){
-        	// AJAX 통신
-        	let data = ajaxForHTML("/logout");
-        	// DOM 변경
-        	$("#loginContainer").html(data);
         	// WebSocket 연결 해제
 			if(webSocket !== undefined){
+				send('logout');
 				// 연결 종료
 				webSocket.close();
 				// 객체 초기화
 				webSocket = undefined;
-				document.getElementById("message").innerHTML+="<br/>" + "<b>웹소켓 연결이 해제되었습니다.</b>";
-			}else{
-				document.getElementById("message").innerHTML+="<br/>" + "<b>연결된 웹소켓이 존재하지 않습니다.</b>";
 			}
+        	// AJAX 통신
+        	let data = ajaxForHTML("/logout");
+        	// DOM 변경
+        	$("#loginContainer").html(data);
         }
         
 		<!-- webSocket 변수 선언 -->
@@ -205,7 +204,7 @@
 				}
 				data = {
 					"handle" : "message",
-					"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML,
+					"sender" : "${sessionScope.loginUser.name}" || document.getElementById("loginName").innerHTML,
 					"content" : chatMessage.value
 				}				
 				chatMessage.value = "";
@@ -213,14 +212,18 @@
 				
 				data = {
 					"handle" : "login",
-					"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML
+					"sender" : "${sessionScope.loginUser.name}" || document.getElementById("loginName").innerHTML
+				}
+			}else if(handle === "logout"){
+				data = {
+					"handle" : "logout",
+					"uuid" : "${sessionScope.loginUser.uuid}" || document.getElementById("loginUuid").value,
 				}
 			}else if(handle === "roomList"){
 				data = {
 					"handle" : "roomList"
 				}
 			}
-
 			
 			let jsonData = JSON.stringify(data);
 			
@@ -247,13 +250,19 @@
                 	 "handle" : receive[0],
                    	 "sender" : receive[1],
                    	 "content" : receive[2]
-                };
+                }
         	}else if(receive[0] === "login"){
                 data = {
                    	 "handle" : receive[0],
-                     "sender" : receive[1]
-                };
-        	}else if(receive[0] === "roomList"){
+                     "sender" : receive[1],
+                     "uuid" : receive[2],
+                }
+        	}else if(receive[0] === "logout"){
+                data = {
+                   	 "handle" : receive[0],
+                     "uuid" : receive[1]
+                }
+           	}else if(receive[0] === "roomList"){
         		data.handle = receive[0];
         		for(let i = 1; i < receive.length; i++){
         			data[count++] = receive[i];
@@ -282,6 +291,9 @@
 						        			  "application/json");
             	// 화면에 추가
             	document.getElementById("roomList").innerHTML += messageData;
+        	}else if(data.handle === "logout"){
+        		// 화면에서 제거
+        		document.getElementById(data.uuid).remove();
         	}else if(data.handle === "roomList"){
         		// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
             	let messageData = ajaxForHTML("/room", 
