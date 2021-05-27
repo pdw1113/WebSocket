@@ -37,7 +37,7 @@ public class HomeController {
 		// HTML
 		ModelAndView mav = null; 
 		
-		// 
+		// 공백 아닐 시
 		if(!"".equals(name) && name != null) {
 			session.setAttribute("loginUser", user);
 			mav = new ModelAndView("sample");
@@ -88,9 +88,7 @@ public class HomeController {
 	
 	// JSON 타입의 파라미터를 받기 위해서는 @RequestBody 어노테이션을 붙여줘야 한다.
 	@PostMapping(value = "/room")
-	public ModelAndView room(HttpSession session, @RequestBody HashMap<String, String> map) { 
-		
-		logger.debug(map.toString());
+	public ModelAndView room(HttpSession session, @RequestBody HashMap<String, String> map) {
 		
 		ModelAndView mav = null; 
 		
@@ -98,16 +96,17 @@ public class HomeController {
 		
 		// Locale을 통해 한글 → 영어 표시 가능
 		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
+		// 날짜 추가         
+		mav.addObject("date", sdf.format(new Date()));
 		
-//		User user = (User)session.getAttribute("loginUser");
-		
+		if(map.get("handle").equals("roomList")) {     
+			map.remove("handle");
+			mav.addObject("map", map);
+			return mav;
+		}
 		String sender = map.get("sender");
 		
-//		if(!user.getName().equals(sender)) {
-			mav.addObject("sender", sender);
-//		}
-		
-		mav.addObject("date", sdf.format(new Date()));
+		mav.addObject("sender", sender);
 		return mav;
 	}	
 }

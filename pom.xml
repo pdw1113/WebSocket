@@ -129,17 +129,18 @@
 		<!-- Web Socket -->
 		
 		<!-- https://mvnrepository.com/artifact/org.springframework/spring-aop -->
-<!-- 		<dependency>
+ 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-aop</artifactId>
 		    <version>5.2.10.RELEASE</version>
-		</dependency> -->
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
-<!-- 		<dependency>
+		<dependency>
 		    <groupId>org.aspectj</groupId>
 		    <artifactId>aspectjweaver</artifactId>
-		    <version>1.9.6</version>
-		</dependency> -->
+		    <version>${org.aspectj-version}</version>
+		</dependency>
+		
 		
 		
 	

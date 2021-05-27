@@ -15,6 +15,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import nyu.socket.test.user.User;
 
+
 public class WebSocketHandler implements org.springframework.web.socket.WebSocketHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
@@ -40,37 +41,62 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		logger.debug("로그인 유저 목록 : " + sessionMap.toString());
 	}
 
-	@Override
+	@Override  
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-		
+		// 메세지(Json) 파싱
 		JSONParser jParser = new JSONParser();
 		JSONObject jObject = (JSONObject) jParser.parse((String)message.getPayload());
 				
 		if(jObject.get("handle").toString().equals("message")) {
-			
-			message = new TextMessage("message," + jObject.get("sender").toString() + "," + jObject.get("content").toString());
+			// 채팅 메세지
+			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString());
 			
 			logger.debug("세션 :  "	+ session.toString());
-			logger.debug("메세지 : "	+ message.toString());
-			
+			logger.debug("메세지 : "	+ message.toString()); 
+			 
 			logger.debug("메세지 받을 세션들 : " + sessionMap.toString());
 			
 			for (User user : sessionMap.keySet()) {
 				sessionMap.get(user).sendMessage(message);
 			}
-		}else if(jObject.get("handle").toString().equals("room")) {
+		}else if(jObject.get("handle").toString().equals("login")) {
+			// 로그인 한 유저 (자기 자신)
 			User user = (User)session.getAttributes().get("loginUser");
-			message = new TextMessage("login," + user.getName());
+			// 채팅방 생성 메세지 (로그인 키워드)
+			message = new TextMessage("login" + "," + user.getName());
+			// 채팅방 목록 키워드
+			String loginedUsers = "roomList";
 			
-			// 채팅방 화면에 전송
+			// 1. 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
 			for (User users : sessionMap.keySet()) {
+				// 자기 자신은 제외
+				if(users.getName().equals(user.getName())) continue;
+				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message); 
+				// 로그인 된 유저들 (,) 구분자로 더하기
+				loginedUsers += "," + users.getName();
 			}
-		} 
-	}
-	
-	public void createRoom(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-		System.out.println("AOP테스트");
+			// 채팅방 호출 메세지
+			message = new TextMessage(loginedUsers);
+			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
+			sessionMap.get(user).sendMessage(message); 
+		}else if(jObject.get("handle").toString().equals("roomList")) {           
+			// 자기 자신
+			User user = (User)session.getAttributes().get("loginUser");
+			// 채팅방 목록 키워드
+			String loginedUsers = "roomList";
+			// 로그인 되어 있는 유저 불러오기
+			for (User users : sessionMap.keySet()) {
+				// 자기 자신은 제외
+				if(users.getName().equals(user.getName())) continue;
+				// 로그인 된 유저들 (,) 구분자로 더하기
+				loginedUsers += "," + users.getName();
+			}
+			// 채팅방 호출 메세지
+			message = new TextMessage(loginedUsers);
+			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
+			sessionMap.get(user).sendMessage(message); 
+		}
 	}
 	
 	@Override

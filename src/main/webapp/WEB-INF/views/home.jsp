@@ -58,18 +58,7 @@
 
 					<div class="messages-box">
 			      		<div class="list-group rounded-0" id="roomList">
-			        		<a class="list-group-item list-group-item-action active text-white rounded-0">
-					          	<div class="media">
-					          		<img src="resources/pic/sample.png" alt="user" width="50" class="rounded-circle">
-					            	<div class="media-body ml-4">
-					              		<div class="d-flex align-items-center justify-content-between mb-1">
-						                	<h6 class="mb-0">김범수</h6>
-						                	<small class="small font-weight-bold">25 Dec</small>
-					              		</div>
-					            	 	<p class="font-italic mb-0 text-small">안녕하세요.</p>
-					            	</div>
-				        		</div>
-			        		</a>
+			      		<%-- 채팅방 동적 생성 --%>
 		      			</div>
 			    	</div>
 		  		</div>
@@ -127,21 +116,24 @@
 		}
 	
 		<!-- 로그인 (세션 추가 및 WebSocket 연결) -->
-        function login(){
+		function login(){
         	// 이름
-        	let name = document.getElementById("name").value;
-        	// AJAX 통신
-        	let data = ajaxForHTML("/login", {"name" : name});
-        	// 로그인 성공 시
-        	if(data !== ""){
-            	// DOM 변경
-            	$("#loginContainer").html(data);
-            	// WebSocket 연결
-            	connect();
-            	return;
-        	}
-        	alert("로그인 실패!");
-        }
+       		let name = document.getElementById("name").value;
+           	// AJAX 통신
+           	let data = ajaxForHTML("/login", {"name" : name});
+           	// 로그인 성공 시
+           	if(data !== ""){
+               	// DOM 변경
+               	$("#loginContainer").html(data);
+               	// WebSocket 연결
+               	connect();
+               	setTimeout(function(){
+               		send('login');
+				}, 1000);
+           	}else{
+               	alert("로그인 실패!");
+           	}
+		}
         
         <!-- 로그아웃 (세션 제거) -->
         function logout(){
@@ -187,6 +179,13 @@
 			}else{
 				document.getElementById("message").innerHTML+="<br/>" + "<b>이미 연결되어 있습니다!!</b>";
 			}
+			
+			// 로그인 되어 있을 때
+			if("${sessionScope.loginUser}"){
+               	setTimeout(function(){
+    				send('roomList');
+				}, 1000);
+			}
 		}
 
 		<!-- webSocket 연결 성공 시 -->
@@ -200,20 +199,32 @@
 			let data = null;
 			let chatMessage = document.getElementById("chat");
 			
-			if(chatMessage.value){
-				if(handle === "message"){
-					data = {
-						"handle" : "message",
-						"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML,
-						"content" : chatMessage.value
-					}
+			if(handle === "message"){
+				if(!chatMessage.value){
+					return;
 				}
-				let jsonData = JSON.stringify(data);
-				
-				webSocket.send(jsonData);
-				
+				data = {
+					"handle" : "message",
+					"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML,
+					"content" : chatMessage.value
+				}				
 				chatMessage.value = "";
+			}else if(handle === "login"){
+				
+				data = {
+					"handle" : "login",
+					"sender" : "${sessionSocpe.loginUser.name}" || document.getElementById("loginName").innerHTML
+				}
+			}else if(handle === "roomList"){
+				data = {
+					"handle" : "roomList"
+				}
 			}
+
+			
+			let jsonData = JSON.stringify(data);
+			
+			webSocket.send(jsonData);
 		}
 		
 		// 엔터로 채팅 전송
@@ -226,8 +237,10 @@
 		<!-- webSocket 메세지 수신 시 -->
 		function onMessage(evt){			
 			
+			// 수신한 메세지 (,)로 자르기
         	let receive = evt.data.split(",");
-        	let data;
+        	let data = {};
+        	let count = 0;
      		
         	if(receive[0] === "message"){
                 data = {
@@ -240,6 +253,11 @@
                    	 "handle" : receive[0],
                      "sender" : receive[1]
                 };
+        	}else if(receive[0] === "roomList"){
+        		data.handle = receive[0];
+        		for(let i = 1; i < receive.length; i++){
+        			data[count++] = receive[i];
+        		}
         	}
         	
             writeResponse(data);
@@ -264,12 +282,36 @@
 						        			  "application/json");
             	// 화면에 추가
             	document.getElementById("roomList").innerHTML += messageData;
-        		
+        	}else if(data.handle === "roomList"){
+        		// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+            	let messageData = ajaxForHTML("/room", 
+						        			  JSON.stringify(data), 
+						        			  "application/json");
+            	// 화면에 추가
+            	document.getElementById("roomList").innerHTML = messageData;
         	}
         }
         
+        // 채팅창 공백
         function chatClear(){
         	document.getElementById("message").innerHTML=" ";
+        }
+        
+        // 채팅방 CSS 변경
+        function roomEnter(room){
+        	
+        	if($(room).hasClass("active")){
+        		return;
+        	}
+        	
+        	let bb = document.getElementsByClassName('active')[0];
+        	if(bb !== undefined){
+            	bb.classList.add('list-group-item-light');
+            	bb.classList.remove('active', 'text-white');
+        	}
+        	
+        	room.classList.add('active', 'text-white');
+        	room.classList.remove('list-group-item-light');
         }
         
 	</script>
