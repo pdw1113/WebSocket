@@ -309,9 +309,10 @@
         	document.getElementById("message").innerHTML=" ";
         }
         
-        // 채팅방 CSS 변경
+        // 채팅방 입장
         function roomEnter(room){
         	
+        	// 1. 채팅방 목록 리스트 CSS 변경
         	if($(room).hasClass("active")){
         		return;
         	}
@@ -324,6 +325,10 @@
         	
         	room.classList.add('active', 'text-white');
         	room.classList.remove('list-group-item-light');
+        	
+        	// 2. 현재 열려있는 채팅방 초기화
+        	
+        	// 3. 상대방 UUID로 session 찾기 (1. 입장과 동시에 채팅방 집어넣기 or 첫 메세지 보낼 때 연결하기)
         }
         
 	</script>
