@@ -77,7 +77,7 @@
 	        	<div class="input-group">
 		          	<input type="text" id="chat" placeholder="메세지를 입력하세요." class="form-control rounded-0 border-0 py-4 bg-light">
 		          	<div class="input-group-append">
-		            	<button type="button" class="btn btn-link bg-white" onclick="send('message');">
+		            	<button type="button" class="btn btn-link bg-white" id="sendBtn" onclick="send('message');">
 		            		<i class="fa fa-paper-plane"></i>
 		            	</button>
 		          	</div>
@@ -90,6 +90,11 @@
 	<!-- 채팅 컨테이너 -->
 	
 	<script>
+    
+		<!-- 변수 선언 -->
+		let webSocket; 		// 웹소켓 전역변수
+		let uuid; 			// 상대방 고유 UUID
+		
 		// HTML 전송 공통 AJAX
 		function ajaxForHTML(url, data, contentType){
 			
@@ -151,9 +156,6 @@
         	// DOM 변경
         	$("#loginContainer").html(data);
         }
-        
-		<!-- webSocket 변수 선언 -->
-		let webSocket;
 		
 		/* 
 			WebSocket Session은 새로고침 시, 연결이 해제 된다.
@@ -193,7 +195,7 @@
 		}
 		
 		<!-- webSocket 메세지 발송 -->
-		function send(handle){
+		function send(handle, secret){
 			
 			let data = null;
 			let chatMessage = document.getElementById("chat");
@@ -202,11 +204,18 @@
 				if(!chatMessage.value){
 					return;
 				}
+				
 				data = {
 					"handle" : "message",
 					"sender" : "${sessionScope.loginUser.name}" || document.getElementById("loginName").innerHTML,
 					"content" : chatMessage.value
-				}				
+				}
+				
+				// 1:1 채팅방의 경우 uuid 추가
+				if(secret === true){
+					data.uuid = uuid;
+				}
+					
 				chatMessage.value = "";
 			}else if(handle === "login"){
 				
@@ -233,7 +242,8 @@
 		// 엔터로 채팅 전송
 		$(document).on('keydown', '#chat', function(e){
             if(e.keyCode == 13 && !e.shiftKey) {
-            	send('message');
+            	
+            	send('message',true);
             }
        	});
 		
@@ -313,6 +323,7 @@
         function roomEnter(room){
         	
         	// 1. 채팅방 목록 리스트 CSS 변경
+        	// 활성화 되어 있는 방 클릭 시 [효과 X]
         	if($(room).hasClass("active")){
         		return;
         	}
@@ -327,8 +338,17 @@
         	room.classList.remove('list-group-item-light');
         	
         	// 2. 현재 열려있는 채팅방 초기화
+        
+
+    	
+    		// 3. secret true값으로 메세지 보내기
+    		// send('message', true);
         	
         	// 3. 상대방 UUID로 session 찾기 (1. 입장과 동시에 채팅방 집어넣기 or 첫 메세지 보낼 때 연결하기)
+        	uuid = room.id;
+        	
+        	// 4. 메세지 보내기 onClick 이벤트 변경
+        	$("#sendBtn").attr("onClick", "send('message', true)");
         }
         
 	</script>

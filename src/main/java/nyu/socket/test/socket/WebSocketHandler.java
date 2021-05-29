@@ -23,7 +23,7 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 	// 로그인 유저 목록 : <User, WebSocketSession>
 	private Map<User, WebSocketSession> sessionMap = new HashMap<User, WebSocketSession>();
 	// 채팅방 목록 : <String, WebSocketSession>
-	private Map<String, ArrayList<WebSocketSession>> chatMap = new HashMap<String, ArrayList<WebSocketSession>>();
+	private Map<String, User> userMap = new HashMap<String, User>();
 	
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -35,45 +35,46 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 					 "\n웹소켓 세션 : " + session.getId() + 
 					 "\n연결 성공");
 		
-		// 로그인 유저 목록에 추가
+		// 유저 - 세션 목록에 추가
 		sessionMap.put(user, session);
+		// uuid - 유저 목록에 추가
+		userMap.put(user.getUuid(), user);
 		 
 		logger.debug("로그인 유저 목록 : " + sessionMap.toString());
 	}
 
 	@Override  
 	public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
-		// 메세지(Json) 파싱
+		// 메세지(JSON) 파싱
 		JSONParser jParser = new JSONParser();
 		JSONObject jObject = (JSONObject) jParser.parse((String)message.getPayload());
+		
+		// 보낸 사람 (나)
+		User sender = (User)session.getAttributes().get("loginUser");
+		String senderName = sender.getName();
+		String senderUuid = sender.getUuid();
 				
 		if(jObject.get("handle").toString().equals("message")) {
 			
 			// 채팅 메세지
-			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString());
+			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString() + "," + sender.getUuid());
+			// UUID로 user 찾기
+			User receiver = userMap.get(jObject.get("uuid"));
+			// 메세지 전송
+			sessionMap.get(receiver).sendMessage(message);
 			
-			logger.debug("세션 :  "	+ session.toString());
-			logger.debug("메세지 : "	+ message.toString()); 
-			 
-			logger.debug("메세지 받을 세션들 : " + sessionMap.toString());
-			
-			for (User user : sessionMap.keySet()) {
-				sessionMap.get(user).sendMessage(message);
-			}
 			
 		}else if(jObject.get("handle").toString().equals("login")) {
 			
-			// 로그인 한 유저 (자기 자신)
-			User user = (User)session.getAttributes().get("loginUser");
 			// 채팅방 생성 메세지 (로그인 키워드)
-			message = new TextMessage("login" + "," + user.getName() + "," + user.getUuid());
+			message = new TextMessage("login" + "," + senderName + "," + senderUuid);
 			// 채팅방 목록 키워드
 			String loginedUsers = "roomList";
 			
 			// 1. 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
 			for (User users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getUuid().equals(user.getUuid())) continue;
+				if(users.getUuid().equals(senderUuid)) continue;
 				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message); 
 				// 로그인 된 유저들 (,) 구분자로 더하기
@@ -82,40 +83,36 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			// 채팅방 호출 메세지
 			message = new TextMessage(loginedUsers);
 			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
-			sessionMap.get(user).sendMessage(message); 
+			sessionMap.get(sender).sendMessage(message); 
 			
 		}else if(jObject.get("handle").toString().equals("logout")) {
 			
-			// 로그아웃 한 유저 (자기 자신)
-			User user = (User)session.getAttributes().get("loginUser");
 			// 채팅방 삭제 메세지 (로그아웃 키워드)
-			message = new TextMessage("logout" + "," + user.getUuid());                 
+			message = new TextMessage("logout" + "," + senderUuid);                 
 			                      
 			// 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그아웃 알림
 			for (User users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getName().equals(user.getName())) continue;
+				if(users.getName().equals(senderName)) continue;
 				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message);
 			}
 			
-		}else if(jObject.get("handle").toString().equals("roomList")) {       
+		}else if(jObject.get("handle").toString().equals("roomList")) {
 			
-			// 자기 자신
-			User user = (User)session.getAttributes().get("loginUser");
 			// 채팅방 목록 키워드
 			String loginedUsers = "roomList";
 			// 로그인 되어 있는 유저 불러오기
 			for (User users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getName().equals(user.getName())) continue;
+				if(users.getName().equals(senderName)) continue;
 				// 로그인 된 유저들 (,) 구분자로 더하기         
 				loginedUsers += "," + users.getName() + ":" + users.getUuid();
 			}
 			// 채팅방 호출 메세지
 			message = new TextMessage(loginedUsers);
 			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
-			sessionMap.get(user).sendMessage(message); 
+			sessionMap.get(sender).sendMessage(message); 
 		}
 	}
 	
@@ -128,7 +125,11 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
 		
-		sessionMap.remove((User)session.getAttributes().get("loginUser"));
+		User u = (User)session.getAttributes().get("loginUser");
+		
+		sessionMap.remove(u);
+		userMap.remove(u.getUuid());
+		
 		logger.debug((User)session.getAttributes().get("loginUser") + "님의 웹소켓 연결 해제");
 	}
 
