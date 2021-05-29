@@ -54,3 +54,7 @@ input::placeholder {
 .aop:hover{
 	cursor: pointer;
 }
+
+.temp{
+	color:red !important;
+}

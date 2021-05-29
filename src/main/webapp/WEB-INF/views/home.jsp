@@ -259,7 +259,8 @@
                 data = {
                 	 "handle" : receive[0],
                    	 "sender" : receive[1],
-                   	 "content" : receive[2]
+                   	 "content" : receive[2],
+                   	 "uuid" : receive[3]
                 }
         	}else if(receive[0] === "login"){
                 data = {
@@ -285,31 +286,40 @@
 		<!-- webSocket 메세지 화면에 표시해주기 -->
         function writeResponse(data){
         	
+        	// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+        	
         	if(data.handle === "message"){
-            	// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+            	// HTML 데이터 받기
             	let messageData = ajaxForHTML("/message", 
     					        			  JSON.stringify(data), 
     					        			  "application/json");
-            	// 화면에 추가
+            	// 채팅방에 메세지 추가
             	document.getElementById("message").innerHTML += messageData;
             	
-            	console.log($('#message').scrollTop($('#message').prop('scrollHeight')));
-        	}else if(data.handle === "login"){            	
-        		// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+            	// 채팅방 목록에 알림 효과
+            	$("#" + data.uuid).addClass('temp');
+            	
+            	// 스크롤 하단 고정
+            	$('#message').scrollTop($('#message').prop('scrollHeight'));
+            	
+        	}else if(data.handle === "login"){
+        		// HTML 데이터 받기
             	let messageData = ajaxForHTML("/room", 
 						        			  JSON.stringify(data), 
 						        			  "application/json");
-            	// 화면에 추가
+            	// 채팅방 목록에 로그인 한 유저 추가
             	document.getElementById("roomList").innerHTML += messageData;
+            	
         	}else if(data.handle === "logout"){
         		// 화면에서 제거
         		document.getElementById(data.uuid).remove();
+        		
         	}else if(data.handle === "roomList"){
-        		// JSON.stringify() : JavaScript 객체 → JSON 객체 변환
+        		// HTML 데이터 받기
             	let messageData = ajaxForHTML("/room", 
 						        			  JSON.stringify(data), 
 						        			  "application/json");
-            	// 화면에 추가
+            	// 채팅방 목록에 로그인 되어 있는 유저 추가
             	document.getElementById("roomList").innerHTML = messageData;
         	}
         }
