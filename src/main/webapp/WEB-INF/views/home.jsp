@@ -336,7 +336,7 @@
         	// 활성화 되어 있는 방 클릭 시 [효과 X]
         	if($(room).hasClass("active")){
         		return;
-        	}
+        	} 
         	
         	let bb = document.getElementsByClassName('active')[0];
         	if(bb !== undefined){
