@@ -17,7 +17,7 @@ public class aspect{
 		Object[] signatureArgs = joinPoint.getArgs();           
 		   for (Object signatureArg: signatureArgs) {         
 			      System.out.println("Arg: " + signatureArg);      
-		   }
+		}
 		
 	}
 	
