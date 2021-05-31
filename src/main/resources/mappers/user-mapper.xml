@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="selectUser">
+<mapper namespace="userMapper">
 
 	<!-- UserDTO -->
 	<resultMap type="UserDTO" id="userResultMap">
@@ -10,8 +10,8 @@
 		<result property="userPic" column="USER_PIC"/>
 	</resultMap>
 	
-	<select id="selectUser" resultMap="userResultMap">
-		SELECT * FROM CHATUSER WHERE NAME = #{name}
+	<select id="selectUser" parameterType="string" resultMap="userResultMap">
+		SELECT * FROM CHATUSER WHERE USER_NAME = #{name}
 	</select>
 
 
