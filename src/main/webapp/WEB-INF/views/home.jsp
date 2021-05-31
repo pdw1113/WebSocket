@@ -127,8 +127,9 @@
        		let name = document.getElementById("name").value;
            	// AJAX 통신
            	let data = ajaxForHTML("/login", {"name" : name});
+           	alert(data);
            	// 로그인 성공 시
-           	if(data !== ""){
+/*            	if(data !== ""){
                	// DOM 변경
                	$("#loginContainer").html(data);
                	// WebSocket 연결
@@ -138,7 +139,7 @@
 				}, 1000);
            	}else{
                	alert("로그인 실패!");
-           	}
+           	} */
 		}
         
         <!-- 로그아웃 (세션 제거) -->

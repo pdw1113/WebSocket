@@ -35,13 +35,14 @@ public class UserController {
 		
 		// 유저 생성
 		UserDTO user = userSerivce.selectUser("name");
-//				new UserDTO(UUID.randomUUID().toString(), name);
+		
+		logger.debug(user.toString()); 
 		
 		// HTML
 		ModelAndView mav = null; 
 		
-		// 공백 아닐 시
-		if(!"".equals(name) && name != null) {
+		// DB 존재 시
+		if(user != null) {
 			session.setAttribute("loginUser", user);
 			mav = new ModelAndView("sample");
 		}
