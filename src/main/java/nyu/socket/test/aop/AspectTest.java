@@ -1,4 +1,4 @@
-package nyu.socket.test;
+package nyu.socket.test.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-public class aspect{
+public class AspectTest{
               
-	@After("execution(* nyu.socket.test.HomeController.login(..))")
+	@After("execution(* nyu.socket.test.user.UserController.login(..))")
 	public void afterLogin(JoinPoint joinPoint) {
 		
 		System.out.println("this is aspect!!");

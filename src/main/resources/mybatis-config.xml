@@ -7,7 +7,9 @@
 	</settings>
 	
 	<typeAliases> 
-		<typeAlias type="nyu.socket.test.user.User" alias="User"/>
+		<typeAlias type="nyu.socket.test.user.UserDTO" alias="UserDTO"/>
+		<typeAlias type="nyu.socket.test.chat.ChatRoomDTO" alias="ChatRoomDTO"/>
+		<typeAlias type="nyu.socket.test.chat.ChatMessageDTO" alias="ChatMessageDTO"/>
 	</typeAliases>
 	
 	<mappers>

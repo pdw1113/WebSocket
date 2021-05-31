@@ -1,4 +1,4 @@
-package nyu.socket.test;
+package nyu.socket.test.user;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,18 +10,20 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import nyu.socket.test.user.User;
-
 @Controller
-public class HomeController { 
+public class UserController { 
 	
-	private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+	
+	@Autowired
+	private UserService userSerivce;
 	
 	@GetMapping(value = "/")
 	public String home(HttpSession session) {
@@ -32,7 +34,8 @@ public class HomeController {
 	public ModelAndView login(HttpSession session, String name) {
 		
 		// 유저 생성
-		User user = new User(UUID.randomUUID().toString(), name);
+		UserDTO user = userSerivce.selectUser("name");
+//				new UserDTO(UUID.randomUUID().toString(), name);
 		
 		// HTML
 		ModelAndView mav = null; 
@@ -74,10 +77,10 @@ public class HomeController {
 		// Locale을 통해 한글 → 영어 표시 가능
 		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
 		
-		User user = (User)session.getAttribute("loginUser");
+		UserDTO user = (UserDTO)session.getAttribute("loginUser");
 		String sender = map.get("sender");
 
-		if(!user.getName().equals(sender)) {
+		if(!user.getUserName().equals(sender)) {
 			mav.addObject("sender", sender);
 		}
 		

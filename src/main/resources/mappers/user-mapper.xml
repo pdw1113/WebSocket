@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="selectUser">
+
+	<!-- 게시글 VO -->
+	<resultMap type="UserDTO" id="userResultSet">
+		<id property="userUuid" column="USER_UUID"/>
+		<result property="userName" column="USER_NAME"/>
+		<result property="userPassword" column="USER_PASSWORD"/>
+		<result property="userPic" column="USER_PIC"/>
+	</resultMap>
+
+
+</mapper>

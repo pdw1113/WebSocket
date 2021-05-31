@@ -1,6 +1,5 @@
 package nyu.socket.test.socket;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +12,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import nyu.socket.test.user.User;
+import nyu.socket.test.user.UserDTO;
 
 
 public class WebSocketHandler implements org.springframework.web.socket.WebSocketHandler {
@@ -21,14 +20,14 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 	private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
 	
 	// 로그인 유저 목록 : <User, WebSocketSession>
-	private Map<User, WebSocketSession> sessionMap = new HashMap<User, WebSocketSession>();
+	private Map<UserDTO, WebSocketSession> sessionMap = new HashMap<UserDTO, WebSocketSession>();
 	// 채팅방 목록 : <String, WebSocketSession>
-	private Map<String, User> userMap = new HashMap<String, User>();
+	private Map<String, UserDTO> userMap = new HashMap<String, UserDTO>();
 	
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		
-		User user = (User)session.getAttributes().get("loginUser");
+		UserDTO user = (UserDTO)session.getAttributes().get("loginUser");
 		
 		
 		logger.debug("\n아이디 : " + session.getAttributes().get("loginUser") + 
@@ -38,7 +37,7 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		// 유저 - 세션 목록에 추가
 		sessionMap.put(user, session);
 		// uuid - 유저 목록에 추가
-		userMap.put(user.getUuid(), user);
+		userMap.put(user.getUserUuid(), user);
 		 
 		logger.debug("로그인 유저 목록 : " + sessionMap.toString());
 	}
@@ -50,16 +49,16 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		JSONObject jObject = (JSONObject) jParser.parse((String)message.getPayload());
 		
 		// 보낸 사람 (나)
-		User sender = (User)session.getAttributes().get("loginUser");
-		String senderName = sender.getName();
-		String senderUuid = sender.getUuid();
+		UserDTO sender = (UserDTO)session.getAttributes().get("loginUser");
+		String senderName = sender.getUserName();
+		String senderUuid = sender.getUserUuid();
 				
 		if(jObject.get("handle").toString().equals("message")) {
 			
 			// 채팅 메세지
-			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString() + "," + sender.getUuid());
+			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString() + "," + sender.getUserUuid());
 			// UUID로 user 찾기
-			User receiver = userMap.get(jObject.get("uuid"));
+			UserDTO receiver = userMap.get(jObject.get("uuid"));
 			// 메세지 전송
 			sessionMap.get(receiver).sendMessage(message);
 			
@@ -72,13 +71,13 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			String loginedUsers = "roomList";
 			
 			// 1. 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
-			for (User users : sessionMap.keySet()) {
+			for (UserDTO users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getUuid().equals(senderUuid)) continue;
+				if(users.getUserUuid().equals(senderUuid)) continue;
 				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message); 
 				// 로그인 된 유저들 (,) 구분자로 더하기
-				loginedUsers += "," + users.getName() + ":" + users.getUuid();
+				loginedUsers += "," + users.getUserName() + ":" + users.getUserUuid();
 			}
 			// 채팅방 호출 메세지
 			message = new TextMessage(loginedUsers);
@@ -91,9 +90,9 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			message = new TextMessage("logout" + "," + senderUuid);                 
 			                      
 			// 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그아웃 알림
-			for (User users : sessionMap.keySet()) {
+			for (UserDTO users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getName().equals(senderName)) continue;
+				if(users.getUserName().equals(senderName)) continue;
 				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message);
 			}
@@ -103,11 +102,11 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			// 채팅방 목록 키워드
 			String loginedUsers = "roomList";
 			// 로그인 되어 있는 유저 불러오기
-			for (User users : sessionMap.keySet()) {
+			for (UserDTO users : sessionMap.keySet()) {
 				// 자기 자신은 제외
-				if(users.getName().equals(senderName)) continue;
+				if(users.getUserName().equals(senderName)) continue;
 				// 로그인 된 유저들 (,) 구분자로 더하기         
-				loginedUsers += "," + users.getName() + ":" + users.getUuid();
+				loginedUsers += "," + users.getUserName() + ":" + users.getUserUuid();
 			}
 			// 채팅방 호출 메세지
 			message = new TextMessage(loginedUsers);
@@ -125,12 +124,12 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
 		
-		User u = (User)session.getAttributes().get("loginUser");
+		UserDTO u = (UserDTO)session.getAttributes().get("loginUser");
 		
 		sessionMap.remove(u);
-		userMap.remove(u.getUuid());
+		userMap.remove(u.getUserUuid());
 		
-		logger.debug((User)session.getAttributes().get("loginUser") + "님의 웹소켓 연결 해제");
+		logger.debug((UserDTO)session.getAttributes().get("loginUser") + "님의 웹소켓 연결 해제");
 	}
 
 	@Override
