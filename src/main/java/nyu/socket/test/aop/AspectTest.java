@@ -9,16 +9,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class AspectTest{
               
+	/**
+	 * 로그인 후
+	 * @param joinPoint
+	 */
 	@After("execution(* nyu.socket.test.user.UserController.login(..))")
 	public void afterLogin(JoinPoint joinPoint) {
 		
-		System.out.println("this is aspect!!");
+		/*Object[] signatureArgs = joinPoint.getArgs();           
+		   for (Object signatureArg: signatureArgs) {         
+			      System.out.println("Arg: " + signatureArg);      
+		}*/
+		
+	}
+	
+	@After("execution(* nyu.socket.test.socket.WebSocketHandler.sendAndSave(..))")
+	public void afterMessage(JoinPoint joinPoint) {
+		System.out.println("채팅 AOP");
 		
 		Object[] signatureArgs = joinPoint.getArgs();           
 		   for (Object signatureArg: signatureArgs) {         
 			      System.out.println("Arg: " + signatureArg);      
 		}
-		
+	}
+	
+	@After("execution(* nyu.socket.test.socket.WebSocketHandler.handleMessage(..))")
+	public void afterMessagea(JoinPoint joinPoint) {
+		System.out.println("채팅 AOP2");
 	}
 	
 }

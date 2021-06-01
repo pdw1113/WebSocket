@@ -90,7 +90,26 @@ public class UserController {
 		mav.addObject("date", sdf.format(new Date()));
 		
 		return mav;
-	}	
+	}
+	
+	/**
+	 * 3. 유저 목록
+	 * @param session
+	 * @return
+	 */
+	@PostMapping(value = "/chatRecord")
+	public ModelAndView chatRecord(HttpSession session, @RequestBody HashMap<String, String> map) {
+		
+		ModelAndView mav = null;
+		
+		// ArrayList<UserDTO> chatList = userSerivce.selectChatList();
+		
+		mav = new ModelAndView("message");
+		
+		return mav;
+	}
+	
+	
 
 	
 	/**
@@ -107,8 +126,6 @@ public class UserController {
 		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
 		
 		ModelAndView mav = null;
-		
-		logger.debug(map.toString());
 		
 		mav = new ModelAndView("message"); 
 		

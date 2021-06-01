@@ -1,5 +1,6 @@
 package nyu.socket.test.socket;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,6 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import nyu.socket.test.user.UserDTO;
-
 
 public class WebSocketHandler implements org.springframework.web.socket.WebSocketHandler {
 
@@ -57,11 +57,8 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			
 			// 채팅 메세지
 			message = new TextMessage("message" + "," + sender.getUserName() + "," + jObject.get("content").toString() + "," + sender.getUserUuid());
-			System.out.println(userMap.get(jObject.get("uuid")));
-			System.out.println(sessionMap.get(userMap.get(jObject.get("uuid"))));
-			
 			// 메세지 전송
-			sessionMap.get(userMap.get(jObject.get("uuid"))).sendMessage(message);
+			sendAndSave(userMap.get(jObject.get("uuid")), message);
 			
 		}else if(jObject.get("handle").toString().equals("login")) {
 			
@@ -103,8 +100,12 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 				loginedUsers += "," + users.getUserUuid();
 			}
 			message = new TextMessage(loginedUsers);
-			sessionMap.get(sender).sendMessage(message); 
+			sessionMap.get(sender).sendMessage(message);
 		}
+	}
+	
+	public void sendAndSave(UserDTO user, WebSocketMessage<?> message) throws IOException {
+		sessionMap.get(user).sendMessage(message);
 	}
 	
 	@Override
