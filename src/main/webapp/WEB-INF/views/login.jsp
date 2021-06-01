@@ -2,8 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <c:if test="${!empty sessionScope.loginUser}">
 	<div class="alert alert-primary container">
-		<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
-		<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.uuid}"/>
+		<span id="loginName">${sessionScope.loginUser.userName}</span>님 환영합니다.
+		<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.userUuid}"/>
 	</div>
 	<div class="container">
 		<button class="btn btn-danger" onclick="logout();">로그아웃</button>

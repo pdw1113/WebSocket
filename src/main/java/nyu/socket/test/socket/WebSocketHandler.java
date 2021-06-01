@@ -39,7 +39,7 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		// uuid - 유저 목록에 추가
 		userMap.put(user.getUserUuid(), user);
 		 
-		logger.debug("로그인 유저 목록 : " + sessionMap.toString());
+		logger.debug("총 로그인 유저 : " + sessionMap.size());
 	}
 
 	@Override  
@@ -65,60 +65,51 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			
 		}else if(jObject.get("handle").toString().equals("login")) {
 			
-			// 채팅방 생성 메세지 (로그인 키워드)
-			message = new TextMessage("login" + "," + senderName + "," + senderUuid);
-			// 채팅방 목록 키워드
-			String loginedUsers = "roomList";
+			// [나 → 상대방] 로그인 알림 메세지
+			message = new TextMessage("login" + "," + senderUuid);
+			// [로그인목록 → 나]
+			String loginedUsers = "onLineList";
 			
-			// 1. 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
+			// 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
 			for (UserDTO users : sessionMap.keySet()) {
+				
 				// 자기 자신은 제외
 				if(users.getUserUuid().equals(senderUuid)) continue;
-				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message); 
-				// 로그인 된 유저들 (,) 구분자로 더하기
-				loginedUsers += "," + users.getUserName() + ":" + users.getUserUuid();
+				loginedUsers += "," + users.getUserUuid();
 			}
-			// 채팅방 호출 메세지
+			
 			message = new TextMessage(loginedUsers);
-			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
-			sessionMap.get(sender).sendMessage(message); 
+			sessionMap.get(sender).sendMessage(message);  
 			
 		}else if(jObject.get("handle").toString().equals("logout")) {
 			
-			// 채팅방 삭제 메세지 (로그아웃 키워드)
+			// [나 → 상대방] 로그아웃 알림 메세지
 			message = new TextMessage("logout" + "," + senderUuid);                 
 			                      
 			// 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그아웃 알림
 			for (UserDTO users : sessionMap.keySet()) {
-				// 자기 자신은 제외
+				// 자기 자신은 제외 (아직 로그인 session 종료 X)
 				if(users.getUserName().equals(senderName)) continue;
-				// 유저들에게 로그인 했다는 메세지를 보내면 프론트에서 채팅방으로 만들어준다.
 				sessionMap.get(users).sendMessage(message);
 			}
 			
-		}else if(jObject.get("handle").toString().equals("roomList")) {
+		}else if(jObject.get("handle").toString().equals("onLineList")) {	
 			
-			// 채팅방 목록 키워드
-			String loginedUsers = "roomList";
+			String loginedUsers = "onLineList";
 			// 로그인 되어 있는 유저 불러오기
 			for (UserDTO users : sessionMap.keySet()) {
 				// 자기 자신은 제외
 				if(users.getUserName().equals(senderName)) continue;
-				// 로그인 된 유저들 (,) 구분자로 더하기         
-				loginedUsers += "," + users.getUserName() + ":" + users.getUserUuid();
+				loginedUsers += "," + users.getUserUuid();
 			}
-			// 채팅방 호출 메세지
 			message = new TextMessage(loginedUsers);
-			// 2. 자기 자신에게 로그인된 유저들의 채팅방 목록을 만들어주라는 메세지를 보낸다.
 			sessionMap.get(sender).sendMessage(message); 
 		}
 	}
 	
 	@Override
 	public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-		
-		logger.debug("handleTransportError");
 	}
 
 	@Override
@@ -134,8 +125,6 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 
 	@Override
 	public boolean supportsPartialMessages() {
-		
-		logger.debug("supportsPartialMessages");
 		return false;
 	}
 

@@ -58,3 +58,7 @@ input::placeholder {
 .temp{
 	color:red !important;
 }
+
+.divTest{
+	border: 1px solid black;
+}

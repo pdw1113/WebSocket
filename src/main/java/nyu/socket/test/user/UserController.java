@@ -1,6 +1,7 @@
 package nyu.socket.test.user;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -29,54 +30,89 @@ public class UserController {
 	public String home(HttpSession session) {
 		return "home";
 	}
-	
+	              
+	/**
+	 * 1. 로그인
+	 * @param session
+	 * @param name
+	 * @return
+	 */
 	@PostMapping(value = "/login")
 	public ModelAndView login(HttpSession session, String name) {
 		
-		// 유저 생성
-		UserDTO user = userSerivce.selectUser("name");
+		ModelAndView mav = null;
 		
-		logger.debug(user.toString()); 
+		UserDTO user = userSerivce.selectUser(name);
 		
-		// HTML
-		ModelAndView mav = null; 
-		
-		// DB 존재 시
 		if(user != null) {
 			session.setAttribute("loginUser", user);
-			mav = new ModelAndView("sample");
+			mav = new ModelAndView("login");    
 		}
 		
 		return mav;
 	}
 	
+	/**
+	 * 2. 로그아웃
+	 * @param session
+	 * @return
+	 */
 	@PostMapping(value = "/logout")
 	public ModelAndView logout(HttpSession session) {
 		
 		ModelAndView mav = null;
 		 
-		mav = new ModelAndView("sample"); 
-		
-		// 로그인 세션
-//		String user = (User)session.getAttribute("loginUser");
+		mav = new ModelAndView("login");  
 		
 		session.invalidate();
 		
 		return mav;
 	}	
-
-	// JSON 타입의 파라미터를 받기 위해서는 @RequestBody 어노테이션을 붙여줘야 한다.
-	@PostMapping(value = "/message")
-	public ModelAndView message(HttpSession session, @RequestBody HashMap<String, String> map) { 
+	
+	/**
+	 * 3. 유저 목록
+	 * @param session
+	 * @return
+	 */
+	@PostMapping(value = "/userList")
+	public ModelAndView userList(HttpSession session) {
 		
-		logger.debug(map.toString());
+		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
 		
 		ModelAndView mav = null;
 		
-		mav = new ModelAndView("message"); 
+		ArrayList<UserDTO> userList = userSerivce.selectUserList();
 		
-		// Locale을 통해 한글 → 영어 표시 가능
+		System.out.println(userList);
+		
+		mav = new ModelAndView("users");
+		
+		mav.addObject("userList", userList);
+		
+		mav.addObject("date", sdf.format(new Date()));
+		
+		return mav;
+	}	
+
+	
+	/**
+	 * 3. 메세지 HTML 전송
+	 * JSON 타입의 파라미터를 받기 위해서는 @RequestBody 어노테이션을 붙여줘야 한다.
+	 * 
+	 * @param session
+	 * @param map
+	 * @return
+	 */
+	@PostMapping(value = "/message")
+	public ModelAndView message(HttpSession session, @RequestBody HashMap<String, String> map) { 
+		
 		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
+		
+		ModelAndView mav = null;
+		
+		logger.debug(map.toString());
+		
+		mav = new ModelAndView("message"); 
 		
 		UserDTO user = (UserDTO)session.getAttribute("loginUser");
 		String sender = map.get("sender");
@@ -90,16 +126,23 @@ public class UserController {
 		return mav;
 	}	
 	
-	// JSON 타입의 파라미터를 받기 위해서는 @RequestBody 어노테이션을 붙여줘야 한다.
+	
+	/**
+	 * 4. 채팅룸 HTML 전송
+	 * JSON 타입의 파라미터를 받기 위해서는 @RequestBody 어노테이션을 붙여줘야 한다.
+	 * @param session
+	 * @param map
+	 * @return
+	 */
 	@PostMapping(value = "/room")
 	public ModelAndView room(HttpSession session, @RequestBody HashMap<String, String> map) {
 		
-		ModelAndView mav = null; 
+		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
+		
+		ModelAndView mav = null;
 		
 		mav = new ModelAndView("room"); 
 		
-		// Locale을 통해 한글 → 영어 표시 가능
-		SimpleDateFormat sdf = new SimpleDateFormat("h:mm a | MMM d", new Locale("en", "US"));
 		// 날짜 추가         
 		mav.addObject("date", sdf.format(new Date()));
 		

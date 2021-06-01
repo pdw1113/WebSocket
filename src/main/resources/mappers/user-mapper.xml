@@ -10,8 +10,12 @@
 		<result property="userPic" column="USER_PIC"/>
 	</resultMap>
 	
-	<select id="selectUser" parameterType="string" resultMap="userResultMap">
+	<select id="selectUser" parameterType="String" resultMap="userResultMap">
 		SELECT * FROM CHATUSER WHERE USER_NAME = #{name}
+	</select>
+
+	<select id="selectUserList" resultMap="userResultMap">
+		SELECT * FROM CHATUSER ORDER BY USER_NAME
 	</select>
 
 

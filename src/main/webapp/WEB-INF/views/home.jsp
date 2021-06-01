@@ -9,7 +9,7 @@
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
-	<div class="container py-5 px-4">
+	<div class="container py-5 px-2">
 	
 		<!-- 제작자 및 디자인 정보 -->
 		<header class="text-center">
@@ -26,6 +26,7 @@
 		<!-- 로그인 -->
 		<div class="container w-25 mb-3">
 			<div id="loginContainer" class="input-group">
+			
 				<%-- 로그인 X --%>
 				<c:if test="${empty sessionScope.loginUser}">
 					<input type="email" id="name" class="form-control" placeholder="이름" autofocus>
@@ -33,11 +34,12 @@
 						<button class="btn btn-primary" type="button" onclick="login();">로그인</button>
 					</div>
 				</c:if>
+				
 				<%-- 로그인 O --%>
 				<c:if test="${!empty sessionScope.loginUser}"> 
 					<div class="alert alert-primary container">
-						<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.uuid}"/>
-						<span id="loginName">${sessionScope.loginUser.name}</span>님 환영합니다.
+						<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.userUuid}"/>
+						<span id="loginName">${sessionScope.loginUser.userName}</span>님 환영합니다.
 					</div>
 					<div class="container">
 					<button class="btn btn-danger" onclick="logout();">로그아웃</button>
@@ -54,11 +56,11 @@
 				<div class="bg-white">
 				
 				    <div class="bg-gray px-4 py-2 bg-light">
-				      	<p class="h5 mb-0 py-1">Chat Room List</p>
+				      	<p class="h5 mb-0 py-1">User List</p>
 				    </div>
 
 					<div class="messages-box">
-			      		<div class="list-group rounded-0" id="roomList">
+			      		<div class="list-group rounded-0" id="userList">
 			      		<%-- 채팅방 동적 생성 --%>
 		      			</div>
 			    	</div>
@@ -127,19 +129,17 @@
        		let name = document.getElementById("name").value;
            	// AJAX 통신
            	let data = ajaxForHTML("/login", {"name" : name});
-           	alert(data);
-           	// 로그인 성공 시
-/*            	if(data !== ""){
-               	// DOM 변경
-               	$("#loginContainer").html(data);
-               	// WebSocket 연결
-               	connect();
-               	setTimeout(function(){
-               		send('login');
-				}, 1000);
+       		// 로그인 성공 시
+         	if(data !== ""){
+	           	// DOM 변경
+	           	$("#loginContainer").html(data);
+	           	// WebSocket 연결
+	           	connect();
+	           	// 유저 목록 가져오기
+	           	$("#userList").html(ajaxForHTML("/userList"));
            	}else{
                	alert("로그인 실패!");
-           	} */
+           	}
 		}
         
         <!-- 로그아웃 (세션 제거) -->
@@ -156,6 +156,8 @@
         	let data = ajaxForHTML("/logout");
         	// DOM 변경
         	$("#loginContainer").html(data);
+        	// 유저 목록 초기화
+        	$("#userList").html("");
         }
 		
 		/* 
@@ -166,6 +168,8 @@
 		*/
 		if(webSocket === undefined && "${sessionScope.loginUser}" !== ""){
 			connect();
+           	// 유저 목록 가져오기
+           	$("#userList").html(ajaxForHTML("/userList"));
 		}
 		
 		<!-- webSocket 연결 -->
@@ -173,26 +177,30 @@
 			
 			// webSocket 연결되지 않았을 때만 연결
 			if(webSocket === undefined){
+				// webSocket URL
 				let wsUri = "ws://${pageContext.request.serverName}:${pageContext.request.serverPort}${pageContext.request.contextPath}/webSocket/echo";
+				// 연결
 				webSocket = new WebSocket(wsUri);
-				webSocket.onopen = onOpen;
-				webSocket.onmessage = onMessage;
-				/* webSocket.onclose = onClose; */
+				if(webSocket){
+					webSocket.onopen = onOpen;
+					webSocket.onmessage = onMessage;
+					/* webSocket.onclose = onClose; */
+				}
 			}else{
 				document.getElementById("message").innerHTML+="<br/>" + "<b>이미 연결되어 있습니다!!</b>";
-			}
-			
-			// 로그인 되어 있을 때
-			if("${sessionScope.loginUser}"){
-               	setTimeout(function(){
-    				send('roomList');
-				}, 1000);
 			}
 		}
 
 		<!-- webSocket 연결 성공 시 -->
 		function onOpen(){
-			// TODO
+			// 첫 로그인 시
+			if("${sessionScope.loginUser}" === ""){
+           		send('login');
+			}
+			// 새로고침 시
+			else{
+				send('onLineList');
+			}
 		}
 		
 		<!-- webSocket 메세지 발송 -->
@@ -208,7 +216,7 @@
 				
 				data = {
 					"handle" : "message",
-					"sender" : "${sessionScope.loginUser.name}" || document.getElementById("loginName").innerHTML,
+					"sender" : "${sessionScope.loginUser.userName}" || document.getElementById("loginName").innerHTML,
 					"content" : chatMessage.value
 				}
 				
@@ -219,24 +227,21 @@
 					
 				chatMessage.value = "";
 			}else if(handle === "login"){
-				
 				data = {
-					"handle" : "login",
-					"sender" : "${sessionScope.loginUser.name}" || document.getElementById("loginName").innerHTML
+					"handle" : "login"
 				}
 			}else if(handle === "logout"){
 				data = {
 					"handle" : "logout",
-					"uuid" : "${sessionScope.loginUser.uuid}" || document.getElementById("loginUuid").value,
+					"uuid" : "${sessionScope.loginUser.userUuid}" || document.getElementById("loginUuid").value,
 				}
-			}else if(handle === "roomList"){
+			}else if(handle === "onLineList"){
 				data = {
-					"handle" : "roomList"
+					"handle" : "onLineList"
 				}
 			}
 			
 			let jsonData = JSON.stringify(data);
-			
 			webSocket.send(jsonData);
 		}
 		
@@ -266,15 +271,14 @@
         	}else if(receive[0] === "login"){
                 data = {
                    	 "handle" : receive[0],
-                     "sender" : receive[1],
-                     "uuid" : receive[2],
+                     "uuid" : receive[1]
                 }
         	}else if(receive[0] === "logout"){
                 data = {
                    	 "handle" : receive[0],
                      "uuid" : receive[1]
                 }
-           	}else if(receive[0] === "roomList"){
+           	}else if(receive[0] === "onLineList"){
         		data.handle = receive[0];
         		for(let i = 1; i < receive.length; i++){
         			data[count++] = receive[i];
@@ -304,24 +308,16 @@
             	$('#message').scrollTop($('#message').prop('scrollHeight'));
             	
         	}else if(data.handle === "login"){
-        		// HTML 데이터 받기
-            	let messageData = ajaxForHTML("/room", 
-						        			  JSON.stringify(data), 
-						        			  "application/json");
-            	// 채팅방 목록에 로그인 한 유저 추가
-            	document.getElementById("roomList").innerHTML += messageData;
-            	
+            	// [상대방 → 나] 로그인 표시
+            	document.getElementById(data.uuid).innerHTML = "로그인";
         	}else if(data.handle === "logout"){
-        		// 화면에서 제거
-        		document.getElementById(data.uuid).remove();
-        		
-        	}else if(data.handle === "roomList"){
-        		// HTML 데이터 받기
-            	let messageData = ajaxForHTML("/room", 
-						        			  JSON.stringify(data), 
-						        			  "application/json");
-            	// 채팅방 목록에 로그인 되어 있는 유저 추가
-            	document.getElementById("roomList").innerHTML = messageData;
+        		// [상대방 → 나] 로그인 제거
+        		document.getElementById(data.uuid).innerHTML = "";
+        	}else if(data.handle === "onLineList"){
+        		// [유저 목록 → 나] 로그인 표시
+        		for(let i = 0; i < Object.keys(data).length - 1; i++){
+        			document.getElementById(data[i]).innerHTML = "로그인";
+        		}
         	}
         }
         
