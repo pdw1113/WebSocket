@@ -56,12 +56,12 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 		if(jObject.get("handle").toString().equals("message")) {
 			
 			// 채팅 메세지
-			message = new TextMessage("message" + "," + jObject.get("sender").toString() + "," + jObject.get("content").toString() + "," + sender.getUserUuid());
-			// UUID로 user 찾기
-			UserDTO receiver = userMap.get(jObject.get("uuid"));
-			// 메세지 전송
-			sessionMap.get(receiver).sendMessage(message);
+			message = new TextMessage("message" + "," + sender.getUserName() + "," + jObject.get("content").toString() + "," + sender.getUserUuid());
+			System.out.println(userMap.get(jObject.get("uuid")));
+			System.out.println(sessionMap.get(userMap.get(jObject.get("uuid"))));
 			
+			// 메세지 전송
+			sessionMap.get(userMap.get(jObject.get("uuid"))).sendMessage(message);
 			
 		}else if(jObject.get("handle").toString().equals("login")) {
 			
@@ -72,7 +72,6 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			
 			// 로그인 되어 있는 유저들의 채팅방 화면에 전송하여 로그인 알림
 			for (UserDTO users : sessionMap.keySet()) {
-				
 				// 자기 자신은 제외
 				if(users.getUserUuid().equals(senderUuid)) continue;
 				sessionMap.get(users).sendMessage(message); 

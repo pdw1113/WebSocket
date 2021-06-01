@@ -216,7 +216,6 @@
 				
 				data = {
 					"handle" : "message",
-					"sender" : "${sessionScope.loginUser.userName}" || document.getElementById("loginName").innerHTML,
 					"content" : chatMessage.value
 				}
 				
@@ -224,7 +223,8 @@
 				if(secret === true){
 					data.uuid = uuid;
 				}
-					
+				
+				// 채팅 메세지 초기화
 				chatMessage.value = "";
 			}else if(handle === "login"){
 				data = {
@@ -327,15 +327,15 @@
         }
         
         // 채팅방 입장
-        function roomEnter(room){
+        function roomEnter(room){ 
+        	
+        	let bb = document.getElementsByClassName('active')[0];
         	
         	// 1. 채팅방 목록 리스트 CSS 변경
         	// 활성화 되어 있는 방 클릭 시 [효과 X]
         	if($(room).hasClass("active")){
         		return;
-        	} 
-        	
-        	let bb = document.getElementsByClassName('active')[0];
+        	}
         	if(bb !== undefined){
             	bb.classList.add('list-group-item-light');
             	bb.classList.remove('active', 'text-white');
@@ -346,13 +346,11 @@
         	
         	// 2. 현재 열려있는 채팅방 초기화
         
-
-    	
     		// 3. secret true값으로 메세지 보내기
     		// send('message', true);
         	
         	// 3. 상대방 UUID로 session 찾기 (1. 입장과 동시에 채팅방 집어넣기 or 첫 메세지 보낼 때 연결하기)
-        	uuid = room.id;
+        	uuid = room.dataset.uuid;
         	
         	// 4. 메세지 보내기 onClick 이벤트 변경
         	$("#sendBtn").attr("onClick", "send('message', true)");

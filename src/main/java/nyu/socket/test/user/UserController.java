@@ -83,8 +83,6 @@ public class UserController {
 		
 		ArrayList<UserDTO> userList = userSerivce.selectUserList();
 		
-		System.out.println(userList);
-		
 		mav = new ModelAndView("users");
 		
 		mav.addObject("userList", userList);
