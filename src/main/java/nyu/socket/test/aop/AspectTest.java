@@ -3,6 +3,7 @@ package nyu.socket.test.aop;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
 @Aspect
@@ -23,20 +24,16 @@ public class AspectTest{
 		
 	}
 	
-	@After("execution(* nyu.socket.test.socket.WebSocketHandler.sendAndSave(..))")
+	@After("execution(* nyu.socket.test.socket.WebSocketHandler.handleMessage(..))")
 	public void afterMessage(JoinPoint joinPoint) {
 		System.out.println("채팅 AOP");
 		
 		Object[] signatureArgs = joinPoint.getArgs();           
-		   for (Object signatureArg: signatureArgs) {         
-			      System.out.println("Arg: " + signatureArg);      
+		for (Object signatureArg: signatureArgs) {         
+			System.out.println("Arg: " + signatureArg);      
+			// handle = "message"일 때 DB 삽입
 		}
+		
 	}
-	
-	@After("execution(* nyu.socket.test.socket.WebSocketHandler.handleMessage(..))")
-	public void afterMessagea(JoinPoint joinPoint) {
-		System.out.println("채팅 AOP2");
-	}
-	
 }
  

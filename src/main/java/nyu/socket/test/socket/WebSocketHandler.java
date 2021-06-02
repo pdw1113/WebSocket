@@ -58,7 +58,8 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			// 채팅 메세지
 			message = new TextMessage("message" + "," + sender.getUserName() + "," + jObject.get("content").toString() + "," + sender.getUserUuid());
 			// 메세지 전송
-			sendAndSave(userMap.get(jObject.get("uuid")), message);
+			logger.debug("1");
+			sessionMap.get(userMap.get(jObject.get("uuid"))).sendMessage(message);
 			
 		}else if(jObject.get("handle").toString().equals("login")) {
 			
@@ -102,10 +103,6 @@ public class WebSocketHandler implements org.springframework.web.socket.WebSocke
 			message = new TextMessage(loginedUsers);
 			sessionMap.get(sender).sendMessage(message);
 		}
-	}
-	
-	public void sendAndSave(UserDTO user, WebSocketMessage<?> message) throws IOException {
-		sessionMap.get(user).sendMessage(message);
 	}
 	
 	@Override
