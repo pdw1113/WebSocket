@@ -30,6 +30,11 @@ public class UserController {
 	public String home(HttpSession session) {
 		return "home";
 	}
+	
+	@GetMapping(value = "/register")
+	public String register(HttpSession session) {
+		return "register";
+	}
 	              
 	/**
 	 * 1. 로그인

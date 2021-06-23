@@ -5,8 +5,7 @@
 	<link rel="stylesheet" type="text/css" href="resources/css/chat.css">
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" id="bootstrap-css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    
-	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"/>
+	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 	<script  src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
@@ -24,31 +23,10 @@
 		</header>
 		<!-- 제작자 및 디자인 정보 -->
 		
-		<!-- 로그인 -->
-		<div class="container w-25 mb-3">
-			<div id="loginContainer" class="input-group">
-			
-				<%-- 로그인 X --%>
-				<c:if test="${empty sessionScope.loginUser}">
-					<input type="email" id="name" class="form-control" placeholder="이름" autofocus>
-					<div class="input-group-append">
-						<button class="btn btn-primary" type="button" onclick="login();">로그인</button>
-					</div>
-				</c:if>
-				
-				<%-- 로그인 O --%>
-				<c:if test="${!empty sessionScope.loginUser}"> 
-					<div class="alert alert-primary container">
-						<input type="hidden" id="loginUuid" value="${sessionScope.loginUser.userUuid}"/>
-						<span id="loginName">${sessionScope.loginUser.userName}</span>님 환영합니다.
-					</div>
-					<div class="container">
-					<button class="btn btn-danger" onclick="logout();">로그아웃</button>
-					</div>
-				</c:if>
-			</div>
-		</div>
-		<!-- 로그인 -->
+		<nav class="text-center mb-3">
+			<button class="btn btn-primary" type="button" onclick="login();">Sign in</button>
+			<button class="btn btn-success" type="button" onclick="location.href='/register'">Sign up</button>
+		</nav>
 		
 		<!-- 채팅 컨테이너 -->
 		<div class="row rounded-lg overflow-hidden shadow">
