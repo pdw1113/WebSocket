@@ -24,7 +24,7 @@
 		<!-- 제작자 및 디자인 정보 -->
 		
 		<nav class="text-center mb-3">
-			<button class="btn btn-primary" type="button" onclick="login();">Sign in</button>
+			<button class="btn btn-primary" type="button" onclick="location.href='/register'">Sign in</button>
 			<button class="btn btn-success" type="button" onclick="location.href='/register'">Sign up</button>
 		</nav>
 		
