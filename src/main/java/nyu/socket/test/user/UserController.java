@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
@@ -42,6 +43,20 @@ public class UserController {
 	@GetMapping(value = "/signIn")
 	public String signIn() {
 		return "signIn";
+	}
+	
+	/**
+	 * 회원가입
+	 * @return
+	 */
+	@PostMapping(value = "/signUp")
+	public String signUp(@RequestParam HashMap<String, String> map) {
+		// TODO
+		// 1. 이메일 인증 
+		// 2. 아이디 중복 검사
+		// 3. 비밀번호 암호화
+		logger.debug(map.toString());
+		return "it works";
 	}
 
 	/**
