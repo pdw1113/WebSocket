@@ -36,21 +36,12 @@ public class UserController {
 	}
 	
 	/**
-	 * 로그인 페이지
+	 * 로그인 및 회원가입 페이지
 	 * @return
 	 */
 	@GetMapping(value = "/signIn")
 	public String signIn() {
 		return "signIn";
-	}
-	
-	/**
-	 * 회원가입 페이지
-	 * @return
-	 */
-	@GetMapping(value = "/signUp")
-	public String signUp() {
-		return "signUp";
 	}
 
 	/**

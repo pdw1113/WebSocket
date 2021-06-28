@@ -2,8 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <html>
 <head>
-	<link rel="stylesheet" type="text/css" href="resources/css/register.css">
-    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" id="bootstrap-css">
+	<link rel="stylesheet" type="text/css" href="resources/css/signIn.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 	<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
@@ -52,7 +52,29 @@
                 <a href="#" id="cancel_signup"><i class="fas fa-angle-left"></i> Back</a>
             </form>
             <br>
-            
     </div>
+    
+    <script>
+	    function toggleResetPswd(e){
+	        e.preventDefault();
+	        $('#logreg-forms .form-signin').toggle() // display:block or none
+	        $('#logreg-forms .form-reset').toggle() // display:block or none
+	    }
+	
+	    function toggleSignUp(e){
+	        e.preventDefault();
+	        $('#logreg-forms .form-signin').toggle(); // display:block or none
+	        $('#logreg-forms .form-signup').toggle(); // display:block or none
+	    }
+	
+	    $(()=>{
+	        // Login Register Form
+	        $('#logreg-forms #forgot_pswd').click(toggleResetPswd);
+	        $('#logreg-forms #cancel_reset').click(toggleResetPswd);
+	        $('#logreg-forms #btn-signup').click(toggleSignUp);
+	        $('#logreg-forms #cancel_signup').click(toggleSignUp);
+	    })
+    </script>
+    
 </body>
 </html>
