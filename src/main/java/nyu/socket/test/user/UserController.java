@@ -26,16 +26,33 @@ public class UserController {
 	@Autowired
 	private UserService userSerivce;
 	
+	/**
+	 * 메인 페이지
+	 * @return
+	 */
 	@GetMapping(value = "/")
-	public String home(HttpSession session) {
+	public String home() {
 		return "home";
 	}
 	
-	@GetMapping(value = "/register")
-	public String register(HttpSession session) {
-		return "register";
+	/**
+	 * 로그인 페이지
+	 * @return
+	 */
+	@GetMapping(value = "/signIn")
+	public String signIn() {
+		return "signIn";
 	}
-	              
+	
+	/**
+	 * 회원가입 페이지
+	 * @return
+	 */
+	@GetMapping(value = "/signUp")
+	public String signUp() {
+		return "signUp";
+	}
+
 	/**
 	 * 1. 로그인
 	 * @param session
